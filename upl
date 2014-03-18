@@ -1,0 +1,146 @@
+#!/bin/sh
+
+# Settings
+hostname="domain.de"
+user="root"
+password=""
+path="/path/to/public/directory/"
+#url_to_path="http://domain.de/"
+
+cache_dir="~/Library/Caches/upl/"
+
+RANDOMIZE_NAME=false;
+ZIP=false;
+URL_SHORTEN=false;
+
+
+# Messages
+HELP="`tput bold; tput setaf 4` Usage: this is the help ... `tput setaf 7`";
+FILE_NOT_EXIST="`tput bold; tput setaf 1` The file does not exist! `tput setaf 7`";
+FINISHED_UPLOADING="`tput bold; tput setaf 2` Upload finished `tput setaf 7`";
+UPLOAD_FAILED="`tput setaf 1` Upload failed `tput setaf 7`";
+
+UPLOADED=false;
+RANDOM_NAME=false;
+OLD_NAME=false;
+CACHED=false;
+RANDOMIZED=false;
+
+
+argc="$@"
+
+# if no arguments there
+if [ -z "$argc" ]; then
+    echo "$HELP"
+    exit 1
+fi
+
+for option in $argc
+do
+
+  if [ "$option" == "-h" ] || [ "$option" == "-help" ]; then
+    echo "$HELP"
+    exit 1
+
+  elif [ "$option" == "-z" ]; then
+    ZIP=true
+
+  elif [ "$option" == "-r" ]; then
+    RANDOMIZE_NAME=true
+
+  else
+    FILE="$option"
+
+    if [ ! -f "$FILE" ]; then
+        echo "$FILE_NOT_EXIST"
+        exit 1
+    fi
+  fi
+
+done
+
+# prepare cache dir
+function prepare {
+  mkdir -p $cache_dir;
+}
+
+#generate random name
+function randomize {
+  OLD_NAME=$FILE
+  RANDOM_NAME="$(date +%s)_$OLD_NAME"
+  $RANDOMIZED = true;
+
+  cp $OLD_NAME $cache_dir$RANDOM_NAME;
+  CACHED=true;
+}
+
+# create zip
+function createZIP {
+
+  ZIP_NAME="$FILE.zip";
+  if $RANDOMIZE_NAME; then
+    ZIP_NAME="$RANDOM_NAME.zip";
+  fi
+
+  zip -r $cache_dir$ZIP_NAME $FILE
+  CACHED=true;
+  FILE=$ZIP_NAME;
+  echo "zipped :)"
+}
+
+# upload function
+function upload {
+
+  if $RANDOMIZE_NAME; then
+    FILE=$RANDOM_NAME;
+
+    if $ZIP; then
+      FILE="$RANDOM_NAME.zip";
+    fi
+  fi
+
+  if $CACHED; then
+    FILE=$cache_dir$FILE;
+  fi
+
+  if scp -o ConnectTimeout=30 $FILE $user@$hostname:$path; then
+    UPLOADED=true;
+  else
+    UPLOADED=false;
+  fi
+}
+
+# clear cache dir
+function clean {
+  rm -rf $cache_dir;
+  unset RANDOM_NAME
+  echo $RANDOM_NAME
+}
+
+####### start doin
+
+prepare;
+
+if $RANDOMIZE_NAME; then
+  randomize;
+fi
+
+if $ZIP; then
+  createZIP;
+fi
+
+upload;
+
+
+
+
+if $UPLOADED; then
+  echo "$FINISHED_UPLOADING"
+  #clean; # uncomment when final
+else
+  echo "$UPLOAD_FAILED"
+fi
+
+clean;
+
+exit 1
