@@ -5,24 +5,31 @@ An upload script for the command line with zip and random name option.
 
 # Installation
 
-1) **First you will need to clone this repository to your local machine:**
+1) First you will need to clone this repository to your local machine:
+
 you can choose the location where you want to put it, just remember where you put it because we will need the path in one of the next steps
 
 `git clone git@github.com:schurig/command-line-upload-script.git`
+
 
 
 2) If you don't have it yet, we will now create a **~/bin** folder in your home directory:
 
 `mkdir ~/bin/`
 
+
+
 3) After that we need to open the file `~/.bash_profile` and add the following to the top:
 
 `export PATH="$HOME/bin:$PATH"`
+
+
 
 5) Just **restart your terminal** because we changed the `~/.bash_profile` file and it needs to reload.
 
 
 >By the way, the `export PATH=` contains all the directories that will be looked into for executable binaries when you type a command in your Terminal. We do this so that we later on can easily run the `upl` command.
+
 
 
 
@@ -33,7 +40,8 @@ ln /path/to/repository/upl ~/bin/upl
 ```
 
 
-5) and set the right permissions: 
+
+5) and set the right permissions:
 
 `chmod u+x ~/bin/upl`.
 
@@ -67,14 +75,17 @@ Options:
 
 `-s` this option will shorten your link
 
+`-c` this option will copy the link to your clipboard
 
-###examples:
+
+
+###Examples:
 
 ```sh
-upl 1337.jpg -z -s
+upl 1337.jpg -z -s -c
 ```
 
->Uploading the file **1337.jpg.zip** to the server. The URL will be shorten and the zip file contains your picture **1337.jpg**
+>Uploading the file **1337.jpg.zip** to the server. The URL will be shorten and the zip file contains your picture **1337.jpg**. The public link to the zip file will be ready to paste in your clipboard.
 
 
 
@@ -82,3 +93,8 @@ upl 1337.jpg -z -s
 
 - put link to file in clipboard
 - directory support
+- custom public and private ssh-keys
+- ftp support
+- multible file support
+
+* eating as many cookies as possible with just one byte
