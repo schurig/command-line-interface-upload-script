@@ -1,30 +1,34 @@
-#!/bin/sh
+#!/bin/bash
 
 # Settings
-hostname="domain.de"
-user="root"
-password=""
-path="/path/to/public/directory/"
-#url_to_path="http://domain.de/"
+hostname="domain.tld"; # the hostname of your server (ip also works)
+user="root"; # the username that you would like to login to on your server
+password=""; # your password for your server (not needed in case you use ssh-keys)
+path="/your/path/uploads/"; # the directory on the server that the files get uploaded to
+url_to_path="http://domain.tld/"; # public domain where you can view/download the files
 
-cache_dir="~/Library/Caches/upl/"
+RANDOMIZE_NAME=false; # randomize the filename by default
+ZIP=false; # zip by default
+URL_SHORTEN=true; # shorten by default
+COPY_TO_CLIPBOARD=true; # copy link to clipboard by default
 
-RANDOMIZE_NAME=false;
-ZIP=false;
-URL_SHORTEN=false;
 
-
-# Messages
+# Custom Messages
 HELP="`tput bold; tput setaf 4` Usage: this is the help ... `tput setaf 7`";
 FILE_NOT_EXIST="`tput bold; tput setaf 1` The file does not exist! `tput setaf 7`";
 FINISHED_UPLOADING="`tput bold; tput setaf 2` Upload finished `tput setaf 7`";
 UPLOAD_FAILED="`tput setaf 1` Upload failed `tput setaf 7`";
 
+
+# Script stuff (the script needs this stuff to work)
+cache_dir=(~/Library/Caches/upl/)
 UPLOADED=false;
 RANDOM_NAME=false;
 OLD_NAME=false;
 CACHED=false;
 RANDOMIZED=false;
+DIR=false;
+FINAL_URI=false;
 
 
 argc="$@"
@@ -48,12 +52,30 @@ do
   elif [ "$option" == "-r" ]; then
     RANDOMIZE_NAME=true
 
+  elif [ "$option" == "-s" ]; then
+    URL_SHORTEN=true
+
+  elif [ "$option" == "-c" ]; then
+    COPY_TO_CLIPBOARD=true
+
+  elif [ "$option" == "." ]; then
+    FILE="./"
+    DIR=true
+    ZIP=true
+    RANDOMIZE_NAME=true
+
   else
     FILE="$option"
 
-    if [ ! -f "$FILE" ]; then
-        echo "$FILE_NOT_EXIST"
-        exit 1
+    if [ -d $FILE ] ; then
+      DIR=true
+      ZIP=true
+      RANDOMIZE_NAME=true
+    else
+      if [ ! -f $FILE ]; then
+          echo "$FILE_NOT_EXIST"
+          exit 1
+      fi
     fi
   fi
 
@@ -67,10 +89,21 @@ function prepare {
 #generate random name
 function randomize {
   OLD_NAME=$FILE
-  RANDOM_NAME="$(date +%s)_$OLD_NAME"
+
+  RANDOM_NAME="$(date +%s)_$OLD_NAME";
+
+  if $ZIP; then
+    RANDOM_NAME="$(date +%s)";
+  fi
+
   $RANDOMIZED = true;
 
-  cp $OLD_NAME $cache_dir$RANDOM_NAME;
+  if $DIR; then
+    cp -r $OLD_NAME $cache_dir$RANDOM_NAME;
+  else
+    cp -r $OLD_NAME $cache_dir$RANDOM_NAME;
+  fi
+
   CACHED=true;
 }
 
@@ -82,10 +115,9 @@ function createZIP {
     ZIP_NAME="$RANDOM_NAME.zip";
   fi
 
-  zip -r $cache_dir$ZIP_NAME $FILE
+  zip -r -q $cache_dir$ZIP_NAME $FILE
   CACHED=true;
   FILE=$ZIP_NAME;
-  echo "zipped :)"
 }
 
 # upload function
@@ -108,13 +140,30 @@ function upload {
   else
     UPLOADED=false;
   fi
+
+  UPLOADED=true;
+}
+
+# shorten uri
+function shorten_uri {
+  URI=$1;
+
+  res=$(curl -s https://www.googleapis.com/urlshortener/v1/url \
+  -H 'Content-Type: application/json' \
+  -d '{"longUrl": "'$URI'"}')
+
+  FINAL_URI=`echo $res | sed -e '/^$/d;s/[[:blank:]]//g' -e 's/.*id":"//' -e 's/".*//' -e 's/,//g'`
+
+}
+
+# copy uri to clipboard
+function copy_uri {
+  echo "$1" | pbcopy
 }
 
 # clear cache dir
 function clean {
   rm -rf $cache_dir;
-  unset RANDOM_NAME
-  echo $RANDOM_NAME
 }
 
 ####### start doin
@@ -131,12 +180,22 @@ fi
 
 upload;
 
-
-
-
 if $UPLOADED; then
-  echo "$FINISHED_UPLOADING"
-  #clean; # uncomment when final
+  FINAL_URI=$url_to_path$FILE;
+
+  if $CACHED; then
+    FINAL_URI=$url_to_path$RANDOM_NAME;
+  fi
+
+  if $URL_SHORTEN; then
+    shorten_uri $FINAL_URI;
+  fi
+
+  if $COPY_TO_CLIPBOARD; then
+    copy_uri $FINAL_URI;
+  fi
+
+  echo "$FINISHED_UPLOADING:: $FINAL_URI"
 else
   echo "$UPLOAD_FAILED"
 fi
