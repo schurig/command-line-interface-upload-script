@@ -1,11 +1,17 @@
-# Command line interface Upload Script (cli)
+# Command Line Interface (CLI) - Upload Script
 
-An upload script for the command line interface that supports:
-- zipping
-- short urls (goo.gl)
-- auto-copy to clipboard
-- random names
+#####An upload script for the command line interface that supports:
+- *zipping*
+- *short urls (goo.gl)*
+- *auto-copy to clipboard*
+- *random names*
 
+>It works basically like Droplr, CloudApp and Dropshare, but it is for CLI.
+
+>With **`upl`** it gets easier to **quickly share files** and send others the link to it.
+
+
+***If you have any trouble or found an issue, please let me know! :)***
 
 # Installation
 
@@ -91,7 +97,7 @@ Options:
 
 
 
-###Examples:
+###Example:
 
 ```sh
 upl 1337.jpg -z -s -c
