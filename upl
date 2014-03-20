@@ -4,8 +4,9 @@
 hostname="domain.tld"; # the hostname of your server (ip also works)
 user="root"; # the username that you would like to login to on your server
 password=""; # your password for your server (not needed in case you use ssh-keys)
-path="/your/path/uploads/"; # the directory on the server that the files get uploaded to
+path="/path/to/public/directory"; # the directory on the server that the files get uploaded to
 url_to_path="http://domain.tld/"; # public domain where you can view/download the files
+
 
 RANDOMIZE_NAME=false; # randomize the filename by default
 ZIP=false; # zip by default
@@ -24,11 +25,13 @@ UPLOAD_FAILED="`tput setaf 1` Upload failed `tput setaf 7`";
 cache_dir=(~/Library/Caches/upl/)
 UPLOADED=false;
 RANDOM_NAME=false;
-OLD_NAME=false;
+OLD_FILE_NAME=false;
 CACHED=false;
 RANDOMIZED=false;
 DIR=false;
 FINAL_URI=false;
+FILE_PATH=false;
+DIR_DIR=false;
 
 
 argc="$@"
@@ -59,20 +62,19 @@ do
     COPY_TO_CLIPBOARD=true
 
   elif [ "$option" == "." ]; then
-    FILE="./"
+    FILE_NAME="./"
     DIR=true
     ZIP=true
     RANDOMIZE_NAME=true
 
   else
-    FILE="$option"
+    FILE_NAME="$option"
 
-    if [ -d $FILE ] ; then
+    if [ -d $FILE_NAME ] ; then
       DIR=true
       ZIP=true
-      RANDOMIZE_NAME=true
     else
-      if [ ! -f $FILE ]; then
+      if [ ! -f $FILE_NAME ]; then
           echo "$FILE_NOT_EXIST"
           exit 1
       fi
@@ -81,6 +83,16 @@ do
 
 done
 
+FILE_BASENAME=$(basename $FILE_NAME)
+
+if [ ! $FILE_NAME == $FILE_BASENAME ]; then
+  FILE_PATH=$FILE_NAME;
+  FILE_NAME=$FILE_BASENAME;
+  DIR_DIR=true;
+else
+  FILE_PATH=$FILE_NAME;
+fi
+
 # prepare cache dir
 function prepare {
   mkdir -p $cache_dir;
@@ -88,9 +100,9 @@ function prepare {
 
 #generate random name
 function randomize {
-  OLD_NAME=$FILE
+  OLD_FILE_NAME=$FILE_NAME;
 
-  RANDOM_NAME="$(date +%s)_$OLD_NAME";
+  RANDOM_NAME="$(date +%s)_$FILE_NAME";
 
   if $ZIP; then
     RANDOM_NAME="$(date +%s)";
@@ -98,10 +110,10 @@ function randomize {
 
   $RANDOMIZED = true;
 
-  if $DIR; then
-    cp -r $OLD_NAME $cache_dir$RANDOM_NAME;
+  if $DIR_DIR; then
+    cp -r $FILE_PATH $cache_dir$RANDOM_NAME;
   else
-    cp -r $OLD_NAME $cache_dir$RANDOM_NAME;
+    cp -r $OLD_FILE_NAME $cache_dir$RANDOM_NAME;
   fi
 
   CACHED=true;
@@ -110,32 +122,44 @@ function randomize {
 # create zip
 function createZIP {
 
-  ZIP_NAME="$FILE.zip";
+  ZIP_NAME="$FILE_NAME.zip";
   if $RANDOMIZE_NAME; then
     ZIP_NAME="$RANDOM_NAME.zip";
+  else
+    RANDOM_NAME=$FILE_PATH;
   fi
 
-  zip -r -q $cache_dir$ZIP_NAME $FILE
+  if $CACHED; then
+    zip -r -q $cache_dir$ZIP_NAME $cache_dir$RANDOM_NAME;
+  else
+    zip -r -q $cache_dir$ZIP_NAME $RANDOM_NAME;
+  fi
+
   CACHED=true;
-  FILE=$ZIP_NAME;
+  FILE_NAME=$ZIP_NAME;
 }
 
 # upload function
 function upload {
 
   if $RANDOMIZE_NAME; then
-    FILE=$RANDOM_NAME;
-
+    FILE_NAME=$RANDOM_NAME;
     if $ZIP; then
-      FILE="$RANDOM_NAME.zip";
+      FILE_NAME="$RANDOM_NAME.zip";
+    fi
+  else
+    if ! $CACHED; then
+      FILE_NAME=$FILE_PATH;
     fi
   fi
 
   if $CACHED; then
-    FILE=$cache_dir$FILE;
+    FILE_NAME=$cache_dir$FILE_NAME;
+  else
+    FILE_NAME=$FILE_PATH;
   fi
 
-  if scp -o ConnectTimeout=30 $FILE $user@$hostname:$path; then
+  if scp -o ConnectTimeout=30 $FILE_NAME $user@$hostname:$path; then
     UPLOADED=true;
   else
     UPLOADED=false;
@@ -153,7 +177,6 @@ function shorten_uri {
   -d '{"longUrl": "'$URI'"}')
 
   FINAL_URI=`echo $res | sed -e '/^$/d;s/[[:blank:]]//g' -e 's/.*id":"//' -e 's/".*//' -e 's/,//g'`
-
 }
 
 # copy uri to clipboard
@@ -180,11 +203,13 @@ fi
 
 upload;
 
+FILE_NEW_BASENAME=$(basename $FILE_NAME);
+
 if $UPLOADED; then
-  FINAL_URI=$url_to_path$FILE;
+  FINAL_URI=$url_to_path$FILE_NEW_BASENAME;
 
   if $CACHED; then
-    FINAL_URI=$url_to_path$RANDOM_NAME;
+    FINAL_URI=$url_to_path$FILE_NEW_BASENAME;
   fi
 
   if $URL_SHORTEN; then
