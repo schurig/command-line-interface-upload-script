@@ -7,9 +7,10 @@ An upload script for the command line with zip and random name option.
 
 1) First you will need to clone this repository to your local machine:
 
-you can choose the location where you want to put it, just remember where you put it because we will need the path in one of the next steps
 
 `git clone git@github.com:schurig/command-line-upload-script.git`
+
+You can choose the location where you want to put it, just remember where you put it because we will need the path in one of the next steps.
 
 
 
@@ -51,10 +52,17 @@ ln /path/to/repository/upl ~/bin/upl
 Open the  `upl` file and customise the settings:
 
 ```sh
-hostname="domain.de"
-user="root"
-password=""
-path="/path/to/public/directory/"
+# Settings
+hostname="domain.tld"; # the hostname of your server (ip also works)
+user="user"; # the username that you would like to login to on your server
+password=""; # your password for your server (not needed in case you use ssh-keys)
+path="/path/to/public/directory"; # the directory on the server that the files get uploaded to
+url_to_path="http://domain.tld/"; # public domain where you can view/download the files
+
+RANDOMIZE_NAME=false; # randomize the filename by default
+ZIP=false; # zip by default
+URL_SHORTEN=true; # shorten by default
+COPY_TO_CLIPBOARD=true; # copy link to clipboard by default
 ```
 
 
@@ -91,8 +99,6 @@ upl 1337.jpg -z -s -c
 
 # What I am still working on
 
-- put link to file in clipboard
-- directory support
 - custom public and private ssh-keys
 - ftp support
 - multible file support
