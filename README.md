@@ -1,6 +1,6 @@
-# Command-line Upload Script
+# Command line interface Upload Script (cli)
 
-An upload script for the command line with zip and random name option.
+An upload script for the command line interface with zip and random name option.
 
 
 # Installation
