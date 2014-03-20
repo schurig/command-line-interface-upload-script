@@ -1,6 +1,10 @@
 # Command line interface Upload Script (cli)
 
-An upload script for the command line interface with zip and random name option.
+An upload script for the command line interface that supports:
+- zipping
+- short urls (goo.gl)
+- auto-copy to clipboard
+- random names
 
 
 # Installation
@@ -71,7 +75,7 @@ COPY_TO_CLIPBOARD=true; # copy link to clipboard by default
 _It is pretty easy to use the tool:_
 
 
-`upl [filename] -z (optional) -r (optional) -s (optional)`
+`upl [filename] -z (optional) -r (optional) -s (optional) -c (optional)`
 
 
 
