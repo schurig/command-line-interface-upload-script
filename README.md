@@ -54,7 +54,7 @@ ln -s /path/to/repository/upl ~/bin/upl
 
 5) and set the right permissions:
 
-`chmod u+x /path/to/repository/upl`.
+`chmod +x /path/to/repository/upl`
 
 
 # Configuration
