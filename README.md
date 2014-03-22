@@ -1,6 +1,6 @@
 # Command Line Interface (CLI) - Upload Script
 
-#####An upload script for the command line interface that supports:
+#####A command line interface upload script that supports:
 - *zipping*
 - *short urls (goo.gl)*
 - *auto-copy to clipboard*
