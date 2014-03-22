@@ -47,14 +47,14 @@ You can choose the location where you want to put it, just remember where you pu
 6) Now we only need to create a symbolic link of our `upl` file and place it into our **~/bin** that should be in your home directory:
 
 ```sh
-ln /path/to/repository/upl ~/bin/upl
+ln -s /path/to/repository/upl ~/bin/upl
 ```
 
 
 
 5) and set the right permissions:
 
-`chmod u+x ~/bin/upl`.
+`chmod u+x /path/to/repository/upl`.
 
 
 # Configuration
