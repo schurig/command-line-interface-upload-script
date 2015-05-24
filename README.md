@@ -2,11 +2,11 @@
 
 #####A command line interface upload script that supports:
 - *zipping*
-- *short urls (goo.gl)*
-- *auto-copy to clipboard*
+- *short URL (goo.gl)*
+- *photocopy to clipboard*
 - *random names*
 
->It works basically like Droplr, CloudApp and Dropshare, but it is for CLI.
+>It works basically like Droplet, Cloud App and Drop share, but it is for CL.
 
 >With **`upl`** it gets easier to **quickly share files** and send others the link to it.
 
